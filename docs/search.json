@@ -1,0 +1,44 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "",
+    "text": "The purpose of this Monte Carlo simulation is to visualize the law of large numbers and the central limit theorem using a sequence of increasing sample sizes.\nThis project was inspired by an econometrics lecture in Stata by Professor Jesse Anttila-Hughes at the University of San Francisco. The purpose of this code is to perform a similar simulation in R."
+  },
+  {
+    "objectID": "index.html#motivation",
+    "href": "index.html#motivation",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "",
+    "text": "The purpose of this Monte Carlo simulation is to visualize the law of large numbers and the central limit theorem using a sequence of increasing sample sizes.\nThis project was inspired by an econometrics lecture in Stata by Professor Jesse Anttila-Hughes at the University of San Francisco. The purpose of this code is to perform a similar simulation in R."
+  },
+  {
+    "objectID": "index.html#law-of-large-numbers",
+    "href": "index.html#law-of-large-numbers",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "Law of Large Numbers",
+    "text": "Law of Large Numbers\nA theorem that says that the average from (a large number of independent and identically distributed) random samples converges in probability to the population average (Wooldridge 2020)."
+  },
+  {
+    "objectID": "index.html#central-limit-theorem",
+    "href": "index.html#central-limit-theorem",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "Central Limit Theorem",
+    "text": "Central Limit Theorem\nA key result from probability theory which implies that the sum of independent random variables, or even weakly dependent random variables, when standardized by its standard deviation, has a distribution that tends to standard normal as the sample size grows (Wooldridge 2020)."
+  },
+  {
+    "objectID": "index.html#vizualization-of-clt-and-lln",
+    "href": "index.html#vizualization-of-clt-and-lln",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "Vizualization of CLT and LLN",
+    "text": "Vizualization of CLT and LLN\nI will perform the following steps below to visualize these two concepts:\n\nGenerate a sample of data, run a linear regression, and estimate the parameter of interest, which will be known as “Beta 1 Hat.”\nRepeat step 1 for 1,000 iterations and save each estimate of Beta 1 Hat. These are stored in order to visualize the distribution of these estimates.\nPerform steps 1 and 2 across four sample sizes (10, 100, 1,000, and 10,000) so we can see how the distribution becomes increasingly normally distributed and how it converges to the population mean (which is equal to four) as the sample size increases without bound.\n\nCode is provided below for further reference if desired.\n\n\nCode\nsuppressMessages(\n  library(tidyverse)\n)\n\nset.seed(1)\n\nsample_size = c(10, 100, 1000, 10000) #create dif sample sizes to show how parameter estimates converge as sample grows w/o bound\nsample_size_name = c(\"reg_10\", \"reg_100\", \"reg_1,000\", \"reg_10,000\") #need non-numeric vals for column names\n\n#function purpose: generate dataset for regression, then run 1,000 regressions on each sample size listed above\nregression_function &lt;- function(sample_size_name, sample_size) {\n  sample_size_name &lt;- as.data.frame(t(sapply(\n    1:1000, function(x) tibble( #1,000 regs for each sample to show distribution of parameter estimates at each sample size\n      x = 4 * rnorm(sample_size),\n      u = 3 * rnorm(sample_size),\n      y = 17 + 4*x + u) %&gt;% \n      lm(y ~ x, .)\n  ))) %&gt;% \n    unnest_wider(coefficients) %&gt;% #convert data from list format to numeric\n    select(x) #keep only parameter estimate columns\n}\n\nreg_results &lt;- as.data.frame(mapply(regression_function, sample_size_name, sample_size)) #apply function to name and sample size vectors\n\nreg_results &lt;- reg_results %&gt;% \n  pivot_longer( #tidy data so every column is a variable and every row is an observation\n  cols = ends_with(\".x\"),\n  names_to = \"sample_size_name\",\n    values_to = \"beta_1_hat\"\n  ) %&gt;% \n  mutate(sample_size_name = as.factor(str_remove_all(sample_size_name, \"[reg_.x]\"))) %&gt;%\n  arrange(sample_size_name)\n\nfreqpoly_distributions &lt;- reg_results %&gt;% \n  ggplot(aes(beta_1_hat, color = sample_size_name)) +\n  geom_freqpoly() +\n  scale_x_continuous(breaks = seq(from = 1, to = 7, by = 1)) +\n  theme_bw() +\n  labs(\n    x = \"Beta 1 Hat\",\n    y = \"Count\",\n    title = \"Central Limit Theorem (CLT) & the Law of Large Numbers (LLN)\",\n    subtitle = \"\\n- The CLT tells us that as the sample size grows without bound,\\n  our sample mean will be normally distributed (bell shaped)\\n\\n- The LLN tells us that as the sample size grows without bound,\\n  our sample mean converges to the true population mean (equal to 4)\\n\"\n  ) +\n  guides(color = guide_legend(title = \"Sample Size\"))\n\nfaceted_freqpoly_distributions &lt;- reg_results %&gt;% \n  ggplot(aes(beta_1_hat, color = sample_size_name)) +\n  geom_freqpoly() +\n  facet_wrap(~sample_size_name) +\n  scale_x_continuous(breaks = seq(from = 1, to = 7, by = 1)) +\n  theme_bw() +\n    labs(\n    x = \"Beta 1 Hat\",\n    y = \"Count\",\n    title = \"Central Limit Theorem (CLT) & the Law of Large Numbers (LLN)\"\n  ) +\n  guides(color = guide_legend(title = \"Sample Size\"))\n\n\n\nAll DistributionsIndividual Distributions by Sample Size"
+  },
+  {
+    "objectID": "index.html#references",
+    "href": "index.html#references",
+    "title": "Monte Carlo Simulation - Law of Large Numbers and Central Limit Theorem",
+    "section": "References",
+    "text": "References\n\nWooldridge, J.M.(2020). Introductory Econometrics: A Modern Approach. Brazil: Cengage Learning."
+  }
+]
